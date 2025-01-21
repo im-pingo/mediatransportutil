@@ -1,4 +1,4 @@
-module github.com/livekit/mediatransportutil
+module github.com/im-pingo/mediatransportutil
 
 go 1.22
 
