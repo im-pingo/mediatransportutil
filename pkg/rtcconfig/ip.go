@@ -25,7 +25,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/exp/slices"
 
-	"github.com/livekit/protocol/logger"
+	"github.com/im-pingo/mediatransportutil/pkg/logger"
 )
 
 const (
@@ -49,7 +49,7 @@ func (conf *RTCConfig) determineIP() (string, error) {
 				time.Sleep(500 * time.Millisecond)
 			}
 		}
-		logger.Warnw("could not resolve external IP", err)
+		logger.Warn("could not resolve external IP", err)
 		return "", errors.Errorf("could not resolve external IP: %v", err)
 	}
 
@@ -243,7 +243,7 @@ func validateExternalIP(ctx context.Context, nodeIP string, addr net.Addr) error
 		for {
 			n, err := srv.Read(buf)
 			if err != nil {
-				logger.Debugw("error reading from UDP socket", "err", err)
+				logger.Debug("error reading from UDP socket", "err", err)
 				return
 			}
 			if string(buf[:n]) == magicString {
@@ -269,7 +269,7 @@ func validateExternalIP(ctx context.Context, nodeIP string, addr net.Addr) error
 	case <-validCh:
 		return nil
 	case <-ctx1.Done():
-		logger.Warnw("could not validate external IP", ctx1.Err(), "ip", nodeIP)
+		logger.Warn("could not validate external IP", ctx1.Err(), "ip", nodeIP)
 		return ctx1.Err()
 	}
 }

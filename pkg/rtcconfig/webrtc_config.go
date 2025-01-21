@@ -16,7 +16,6 @@ package rtcconfig
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/rand"
 	"net"
@@ -25,13 +24,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/im-pingo/mediatransportutil/pkg/logger"
+	"github.com/im-pingo/mediatransportutil/pkg/transport"
 	"github.com/pion/ice/v4"
 	"github.com/pion/transport/v3/stdnet"
 	"github.com/pion/webrtc/v4"
-
-	"github.com/im-pingo/mediatransportutil/pkg/transport"
-	"github.com/livekit/protocol/logger"
-	"github.com/livekit/protocol/logger/pionlogger"
+	"github.com/pkg/errors"
 )
 
 type WebRTCConfig struct {
@@ -43,12 +41,12 @@ type WebRTCConfig struct {
 	UseMDNS        bool
 }
 
-func NewWebRTCConfig(rtcConf *RTCConfig, development bool) (*WebRTCConfig, error) {
+func NewWebRTCConfig(rtcConf *RTCConfig, development bool, log logger.Logger) (*WebRTCConfig, error) {
 	c := webrtc.Configuration{
 		SDPSemantics: webrtc.SDPSemanticsUnifiedPlan,
 	}
 	s := webrtc.SettingEngine{
-		LoggerFactory: pionlogger.NewLoggerFactory(logger.GetLogger()),
+		LoggerFactory: logger.NewPionLoggerFactory(log),
 	}
 
 	var ifFilter func(string) bool
@@ -82,10 +80,10 @@ func NewWebRTCConfig(rtcConf *RTCConfig, development bool) (*WebRTCConfig, error
 			ipFilter = newFilter
 			s.SetIPFilter(ipFilter)
 			if len(ips) == 0 {
-				logger.Infow("no external IPs found, using node IP for NAT1To1Ips", "ip", rtcConf.NodeIP)
+				log.Info("no external IPs found, using node IP for NAT1To1Ips", "ip", rtcConf.NodeIP)
 				s.SetNAT1To1IPs([]string{rtcConf.NodeIP}, webrtc.ICECandidateTypeHost)
 			} else {
-				logger.Infow("using external IPs", "ips", ips)
+				log.Info("using external IPs", "ips", ips)
 				s.SetNAT1To1IPs(ips, webrtc.ICECandidateTypeHost)
 			}
 			nat1to1IPs = ips
@@ -256,16 +254,16 @@ func getNAT1to1IPsForConf(rtcConf *RTCConfig, ipFilter func(net.IP) bool) ([]str
 				addr, err := GetExternalIP(ctx, stunServers, &net.UDPAddr{IP: net.ParseIP(localIP), Port: port})
 				if err != nil {
 					if strings.Contains(err.Error(), "address already in use") {
-						logger.Infow("failed to get external ip, address already in use", "local", localIP, "port", port)
+						logger.Info("failed to get external ip, address already in use", "local", localIP, "port", port)
 						continue
 					}
-					logger.Infow("failed to get external ip", "local", localIP, "err", err)
+					logger.Info("failed to get external ip", "local", localIP, "err", err)
 					return
 				}
 				addrCh <- ipmapping{externalIP: addr, localIP: localIP}
 				return
 			}
-			logger.Infow("failed to get external ip after all ports tried", "local", localIP, "ports", udpPorts)
+			logger.Info("failed to get external ip after all ports tried", "local", localIP, "ports", udpPorts)
 		}(ip)
 	}
 
@@ -284,7 +282,7 @@ done:
 				timeout.Reset(1 * time.Second)
 			}
 			if local, ok := natMapping[mapping.externalIP]; ok {
-				logger.Infow("external ip already solved, ignore duplicate",
+				logger.Info("external ip already solved, ignore duplicate",
 					"external", mapping.externalIP,
 					"local", local,
 					"ignore", mapping.localIP)
@@ -339,7 +337,7 @@ done:
 			}
 			return false
 		}
-		logger.Infow("use ips(v4) mapped to external only", "ips", mappedIPs)
+		logger.Info("use ips(v4) mapped to external only", "ips", mappedIPs)
 	}
 	return nat1to1IPs, ipFilter, nil
 }

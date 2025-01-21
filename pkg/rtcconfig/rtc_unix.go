@@ -21,18 +21,18 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/livekit/protocol/logger"
+	"github.com/im-pingo/mediatransportutil/pkg/logger"
 )
 
 func checkUDPReadBuffer() {
 	val, err := getUDPReadBuffer()
 	if err == nil {
 		if val < minUDPBufferSize {
-			logger.Warnw("UDP receive buffer is too small for a production set-up", nil,
+			logger.Warn("UDP receive buffer is too small for a production set-up", nil,
 				"current", val,
 				"suggested", minUDPBufferSize)
 		} else {
-			logger.Debugw("UDP receive buffer size", "current", val)
+			logger.Debug("UDP receive buffer size", "current", val)
 		}
 	}
 }

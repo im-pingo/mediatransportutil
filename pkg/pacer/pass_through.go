@@ -15,7 +15,7 @@
 package pacer
 
 import (
-	"github.com/livekit/protocol/logger"
+	"github.com/im-pingo/mediatransportutil/pkg/logger"
 )
 
 type PassThrough struct {

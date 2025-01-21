@@ -19,7 +19,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/livekit/protocol/logger"
+	"github.com/im-pingo/mediatransportutil/pkg/logger"
 	"github.com/pion/rtp"
 )
 
@@ -51,7 +51,7 @@ func (b *Base) SendPacket(p *Packet) (int, error) {
 
 	_, err := b.writeRTPHeaderExtensions(p)
 	if err != nil {
-		b.logger.Errorw("writing rtp header extensions err", err)
+		b.logger.Error("writing rtp header extensions err", err)
 		return 0, err
 	}
 
@@ -59,7 +59,7 @@ func (b *Base) SendPacket(p *Packet) (int, error) {
 	written, err = p.Writer(p.Header, p.Payload)
 	if err != nil {
 		if !errors.Is(err, io.ErrClosedPipe) {
-			b.logger.Errorw("write rtp packet failed", err)
+			b.logger.Error("write rtp packet failed", err)
 		}
 		return 0, err
 	}

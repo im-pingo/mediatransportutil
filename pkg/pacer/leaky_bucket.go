@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/gammazero/deque"
-	"github.com/livekit/protocol/logger"
+	"github.com/im-pingo/mediatransportutil/pkg/logger"
 )
 
 const (
